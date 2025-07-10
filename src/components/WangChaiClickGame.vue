@@ -316,8 +316,19 @@ export default {
   },
   
   mounted() {
+    // 初始化GIF列表
     this.initializeGifList()
-    this.loadPlayerData()
+    
+    // 延迟显示名字输入框，等待开场动画播放完毕
+    setTimeout(() => {
+      this.checkAndShowNameInput()
+    }, 5500) // 开场动画5秒 + 0.5秒缓冲
+    
+    // 从localStorage加载成就历史
+    this.loadAchievementHistory()
+    
+    // 开始预加载GIF资源
+    this.preloadGifs()
   },
   
   methods: {
@@ -335,6 +346,50 @@ export default {
       this.wangchaiGifs = gifNumbers.map(num => 
         `/wang-chai/wangchai_${num.toString().padStart(3, '0')}.gif`
       )
+    },
+    
+    // 预加载GIF资源
+    preloadGifs() {
+      console.log('🚀 开始预加载GIF资源...')
+      
+      // 预加载策略：分批加载，避免阻塞
+      const preloadBatches = [
+        // 第一批：最常用的GIF (前30个)
+        this.wangchaiGifs.slice(0, 30),
+        // 第二批：中等使用频率 (31-80个)
+        this.wangchaiGifs.slice(30, 80),
+        // 第三批：其余GIF
+        this.wangchaiGifs.slice(80)
+      ]
+      
+      // 分批预加载，每批间隔500ms
+      preloadBatches.forEach((batch, index) => {
+        setTimeout(() => {
+          this.preloadGifBatch(batch, index + 1)
+        }, index * 500)
+      })
+    },
+    
+    preloadGifBatch(gifUrls, batchNumber) {
+      console.log(`📦 预加载第${batchNumber}批GIF: ${gifUrls.length}个`)
+      
+      let loadedCount = 0
+      const totalCount = gifUrls.length
+      
+      gifUrls.forEach(url => {
+        const img = new Image()
+        img.onload = () => {
+          loadedCount++
+          if (loadedCount === totalCount) {
+            console.log(`✅ 第${batchNumber}批GIF预加载完成 (${totalCount}个)`)
+          }
+        }
+        img.onerror = () => {
+          console.warn(`❌ GIF预加载失败: ${url}`)
+          loadedCount++
+        }
+        img.src = url
+      })
     },
     
     handlePlanetClick() {

@@ -1,0 +1,31 @@
+# Global headers
+/*
+  # Security headers
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  
+  # Performance headers
+  X-DNS-Prefetch-Control: on
+
+# Static assets with long cache
+/wang-chai/*
+  Cache-Control: public, max-age=31536000, immutable
+  
+/wangchai.png
+  Cache-Control: public, max-age=31536000, immutable
+  
+/wangchaixingqiu.png
+  Cache-Control: public, max-age=31536000, immutable
+  
+/texture_obj/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# JavaScript and CSS
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  
+# HTML files - short cache for updates
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate 

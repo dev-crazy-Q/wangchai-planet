@@ -3,8 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旺柴</title>
+  <title>🚀 旺柴星球 - 3D互动点击游戏</title>
+  
+  <!-- 性能优化 -->
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#1a1a1a">
+  
+  <!-- 预加载关键资源 -->
+  <link rel="preload" href="/wangchai.png" as="image" type="image/png">
+  <link rel="preload" href="/wangchaixingqiu.png" as="image" type="image/png">
+  <link rel="preload" href="/texture_obj/planet.glb" as="fetch" type="application/octet-stream" crossorigin>
+  
+  <!-- 预连接到CDN -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <link rel="preconnect" href="//cdnjs.cloudflare.com">
+  
+  <!-- 图标和PWA配置 -->
   <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/wangchai.png">
+  
+  <!-- SEO优化 -->
+  <meta name="description" content="旺柴星球 - 沉浸式3D银河系背景的互动点击游戏，29级成就系统，社交分享功能">
+  <meta name="keywords" content="旺柴,WangChai,3D游戏,点击游戏,成就系统,meme,区块链">
+  
+  <!-- 社交媒体优化 -->
+  <meta property="og:title" content="🚀 旺柴星球 - 3D互动点击游戏">
+  <meta property="og:description" content="沉浸式3D银河系背景，29级成就系统，快来挑战你的连击极限！">
+  <meta property="og:image" content="/wangchai.png">
+  <meta property="og:type" content="website">
+  
+  <!-- 性能监控脚本 -->
+  <script>
+    // 简单的性能监控
+    window.addEventListener('load', () => {
+      if ('performance' in window) {
+        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+        console.log(`🚀 页面加载完成: ${loadTime}ms`);
+      }
+    });
+  </script>
 </head>
 <body>
   <div id="app"></div>

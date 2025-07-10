@@ -1,0 +1,8 @@
+/* /index.html 200
+
+# SPA fallback rule - must be last
+# Cache static assets
+/wang-chai/* /wang-chai/:splat 200 Cache-Control: max-age=31536000
+/wangchai.png /wangchai.png 200 Cache-Control: max-age=31536000
+/wangchaixingqiu.png /wangchaixingqiu.png 200 Cache-Control: max-age=31536000
+/texture_obj/* /texture_obj/:splat 200 Cache-Control: max-age=31536000 
