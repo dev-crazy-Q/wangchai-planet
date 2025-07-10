@@ -9,6 +9,15 @@
         </div>
       </div>
       
+      <!-- 玩家信息和设置按钮 -->
+      <div class="player-info">
+        <div class="player-name" @click="showChangeNameDialog">
+          <span class="name-icon">👤</span>
+          <span class="name-text">{{ playerName || '点击设置名字' }}</span>
+          <span class="edit-icon">✏️</span>
+        </div>
+      </div>
+      
       <!-- 连击状态和下一个彩蛋提示 -->
       <div class="combo-status" v-if="clickCount > 0">
         <div class="combo-text">🔥 连击中！ 🔥</div>
@@ -73,15 +82,39 @@
     <div v-if="showNameInput" class="name-input-modal">
       <div class="name-input-content">
         <h2>🎮 欢迎来到旺柴星球！</h2>
-        <p>请输入你的名字，开始你的连击之旅：</p>
+        <p>精彩的开场动画结束了！现在请设置你的专属名字：</p>
+        <p class="tip-text">💡 设置名字后就可以开始连击挑战啦！</p>
         <input 
           v-model="playerName" 
           @keyup.enter="savePlayerName"
           placeholder="输入你的名字..."
           class="name-input"
           maxlength="10"
+          ref="nameInput"
         />
-        <button @click="savePlayerName" class="save-name-btn">开始游戏</button>
+        <div class="name-actions">
+          <button @click="savePlayerName" class="save-name-btn" :disabled="!playerName.trim()">开始游戏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 修改名字对话框 -->
+    <div v-if="showChangeNameModal" class="name-input-modal">
+      <div class="name-input-content">
+        <h2>✏️ 修改你的名字</h2>
+        <p>当前名字：<strong>{{ currentPlayerName }}</strong></p>
+        <input 
+          v-model="newPlayerName" 
+          @keyup.enter="confirmChangeName"
+          placeholder="输入新的名字..."
+          class="name-input"
+          maxlength="10"
+          ref="changeNameInput"
+        />
+        <div class="name-actions">
+          <button @click="cancelChangeName" class="cancel-btn">取消</button>
+          <button @click="confirmChangeName" class="save-name-btn" :disabled="!newPlayerName.trim()">确认修改</button>
+        </div>
       </div>
     </div>
 
@@ -233,6 +266,9 @@ export default {
       // 成就记录系统
       playerName: '', // 玩家名字
       showNameInput: false, // 显示名字输入框
+      showChangeNameModal: false, // 显示修改名字对话框
+      currentPlayerName: '', // 当前玩家名字（用于修改时显示）
+      newPlayerName: '', // 新的玩家名字
       showAchievementHistory: false, // 显示成就历史
       achievementHistory: [], // 成就历史记录
       showShareCard: false, // 显示分享卡片
@@ -319,13 +355,13 @@ export default {
     // 初始化GIF列表
     this.initializeGifList()
     
-    // 延迟显示名字输入框，等待开场动画播放完毕
+    // 立即加载玩家数据（不显示弹窗）
+    this.loadPlayerData()
+    
+    // 延迟5.5秒后检查是否需要显示名字输入框（等待开场动画结束）
     setTimeout(() => {
       this.checkAndShowNameInput()
     }, 5500) // 开场动画5秒 + 0.5秒缓冲
-    
-    // 从localStorage加载成就历史
-    this.loadAchievementHistory()
     
     // 开始预加载GIF资源
     this.preloadGifs()
@@ -393,6 +429,19 @@ export default {
     },
     
     handlePlanetClick() {
+      // 检查是否设置了名字
+      if (!this.playerName || !this.playerName.trim()) {
+        console.log('请先设置你的名字才能开始游戏！')
+        this.showNameInput = true
+        // 聚焦到输入框
+        this.$nextTick(() => {
+          if (this.$refs.nameInput) {
+            this.$refs.nameInput.focus()
+          }
+        })
+        return
+      }
+
       // 检查游戏是否被冻结
       if (this.isGameFrozen) {
         console.log('游戏暂时冻结中，请稍后...')
@@ -689,23 +738,73 @@ export default {
       
       if (savedName) {
         this.playerName = savedName
-      } else {
-        // 首次进入，等待开局动画结束后显示名字输入框
-        setTimeout(() => {
-          this.showNameInput = true
-        }, 5500) // 开局动画5秒 + 0.5秒缓冲
+        console.log('加载已保存的用户名：', savedName)
       }
       
       if (savedHistory) {
         this.achievementHistory = JSON.parse(savedHistory)
+        console.log('加载成就历史：', this.achievementHistory.length, '条记录')
       }
     },
     
     savePlayerName() {
-      if (this.playerName.trim()) {
-        localStorage.setItem('wangchai_player_name', this.playerName.trim())
+      if (this.playerName && this.playerName.trim()) {
+        const trimmedName = this.playerName.trim()
+        localStorage.setItem('wangchai_player_name', trimmedName)
+        this.playerName = trimmedName
         this.showNameInput = false
+        console.log('名字保存成功：', trimmedName)
+      } else {
+        console.log('名字不能为空！')
+        // 聚焦到输入框
+        this.$nextTick(() => {
+          if (this.$refs.nameInput) {
+            this.$refs.nameInput.focus()
+          }
+        })
       }
+    },
+    
+    // 显示修改名字对话框
+    showChangeNameDialog() {
+      this.currentPlayerName = this.playerName || '匿名旺柴'
+      this.newPlayerName = this.playerName || ''
+      this.showChangeNameModal = true
+      // 聚焦到输入框
+      this.$nextTick(() => {
+        if (this.$refs.changeNameInput) {
+          this.$refs.changeNameInput.focus()
+          this.$refs.changeNameInput.select()
+        }
+      })
+    },
+    
+    // 确认修改名字
+    confirmChangeName() {
+      if (this.newPlayerName && this.newPlayerName.trim()) {
+        const trimmedName = this.newPlayerName.trim()
+        localStorage.setItem('wangchai_player_name', trimmedName)
+        this.playerName = trimmedName
+        this.showChangeNameModal = false
+        this.currentPlayerName = ''
+        this.newPlayerName = ''
+        console.log('名字修改成功：', trimmedName)
+      } else {
+        console.log('新名字不能为空！')
+        // 聚焦到输入框
+        this.$nextTick(() => {
+          if (this.$refs.changeNameInput) {
+            this.$refs.changeNameInput.focus()
+          }
+        })
+      }
+    },
+    
+    // 取消修改名字
+    cancelChangeName() {
+      this.showChangeNameModal = false
+      this.currentPlayerName = ''
+      this.newPlayerName = ''
     },
     
     saveAchievement(achievement) {
@@ -849,6 +948,24 @@ export default {
     },
     
     // 连击模式不需要保存进度
+    
+    // 检查是否需要显示名字输入框（开场动画结束后调用）
+    checkAndShowNameInput() {
+      if (!this.playerName || !this.playerName.trim()) {
+        // 没有设置用户名，显示设置名字界面
+        console.log('未检测到用户名，显示设置界面')
+        this.showNameInput = true
+        // 聚焦到输入框
+        this.$nextTick(() => {
+          if (this.$refs.nameInput) {
+            this.$refs.nameInput.focus()
+          }
+        })
+      } else {
+        // 已有用户名，直接进入游戏
+        console.log('欢迎回来，', this.playerName, '！可以开始游戏了！')
+      }
+    }
   }
 }
 </script>
@@ -881,6 +998,56 @@ export default {
   font-size: 28px;
   font-weight: bold;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+/* 玩家信息和设置按钮 */
+.player-info {
+  margin-bottom: 10px;
+}
+
+.player-name {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.player-name:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.name-icon {
+  font-size: 20px;
+  margin-right: 10px;
+  color: #FFD700;
+}
+
+.name-text {
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edit-icon {
+  font-size: 18px;
+  color: #007bff;
+  margin-left: 10px;
+  transition: transform 0.3s ease;
+}
+
+.player-name:hover .edit-icon {
+  transform: scale(1.1);
 }
 
 /* 连击状态样式 */
@@ -1889,6 +2056,131 @@ export default {
   
   .cancel-btn, .confirm-btn {
     width: 100%;
+  }
+}
+
+/* 名字输入框样式 */
+.name-input-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1005;
+}
+
+.name-input-content {
+  background: linear-gradient(45deg, #FF8C00, #FFD700);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  border: 5px solid #fff;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+  max-width: 500px;
+  width: 90%;
+}
+
+.name-input-content h2 {
+  color: #fff;
+  font-size: 28px;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.name-input-content p {
+  color: #fff;
+  font-size: 18px;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.tip-text {
+  color: #FFFF99 !important;
+  font-size: 16px !important;
+  font-weight: bold;
+  animation: tipGlow 2s ease-in-out infinite alternate;
+}
+
+.name-input {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+.name-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.save-name-btn {
+  background: linear-gradient(45deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.save-name-btn:hover:not(:disabled) {
+  background: linear-gradient(45deg, #218838, #1e7e34);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.save-name-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cancel-btn {
+  background: linear-gradient(45deg, #dc3545, #c82333);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(45deg, #c82333, #bd2130);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes tipGlow {
+  from { 
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 255, 153, 0.8);
+  }
+  to { 
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 153, 1);
   }
 }
 </style> 

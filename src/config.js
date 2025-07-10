@@ -4,7 +4,7 @@ export const APP_CONFIG = {
   name: '旺柴',
   website: '旺柴连击游戏',
   description: '旺柴连击游戏',
-  contractAddress: '测试', // 合约地址，为空则不显示 | Contract address, leave empty to hide
+  contractAddress: '', // 合约地址，为空则不显示 | Contract address, leave empty to hide
   
   // 社交媒体配置 | Social Media Configuration
   social: {
