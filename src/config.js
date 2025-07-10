@@ -4,18 +4,18 @@ export const APP_CONFIG = {
   name: '旺柴',
   website: '旺柴连击游戏',
   description: '旺柴连击游戏',
-  contractAddress: '', // 合约地址，为空则不显示 | Contract address, leave empty to hide
+  contractAddress: '测试', // 合约地址，为空则不显示 | Contract address, leave empty to hide
   
   // 社交媒体配置 | Social Media Configuration
   social: {
-    telegram: '', // 'https://t.me/your_channel'
-    twitter: '',  // 'https://twitter.com/your_account'
-    discord: '',  // 'https://discord.gg/your_server'
-    website: ''   // 'https://your-website.com'
+    telegram: '测试', // 'https://t.me/your_channel'
+    twitter: '测试',  // 'https://twitter.com/your_account'
+    discord: '测试',  // 'https://discord.gg/your_server'
+    website: '测试'   // 'https://your-website.com'
   },
   
   // 显示配置 - 灵活控制各个模块的显示
-  showBottomBar: false, // 🎛️ 主开关：设为false可以完全隐藏整个底部社交栏
+  showBottomBar: true, // 🎛️ 主开关：设为false可以完全隐藏整个底部社交栏
   showSocial: true,    // 📱 社交媒体：设为false隐藏所有社交链接
   showContract: true,  // 🔗 合约地址：设为false隐藏合约信息
   showWebsite: true,   // 🌐 网站信息：设为false隐藏网站相关信息
